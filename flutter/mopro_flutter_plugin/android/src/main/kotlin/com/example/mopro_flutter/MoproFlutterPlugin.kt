@@ -37,11 +37,10 @@ class FlutterCircomProofResult(proof: FlutterCircomProof, inputs: List<String>) 
 
 fun convertCircomProof(res: CircomProofResult): Map<String, Any> {
     val g1a = FlutterG1(res.proof.a.x, res.proof.a.y, res.proof.a.z)
-            val g2b = FlutterG2(res.proof.b.x, res.proof.b.y, res.proof.b.z)
-            val g1c = FlutterG1(res.proof.c.x, res.proof.c.y, res.proof.c.z)
-            val circomProof = FlutterCircomProof(g1a, g2b, g1c, res.proof.protocol, res.proof.curve)
-            val circomProofResult = FlutterCircomProofResult(circomProof, res.inputs)
-            // Convert to Map before sending
+    val g2b = FlutterG2(res.proof.b.x, res.proof.b.y, res.proof.b.z)
+    val g1c = FlutterG1(res.proof.c.x, res.proof.c.y, res.proof.c.z)
+    val circomProof = FlutterCircomProof(g1a, g2b, g1c, res.proof.protocol, res.proof.curve)
+    val circomProofResult = FlutterCircomProofResult(circomProof, res.inputs)
     val resultMap = mapOf(
         "proof" to mapOf(
             "a" to mapOf(
@@ -66,6 +65,7 @@ fun convertCircomProof(res: CircomProofResult): Map<String, Any> {
     )
     return resultMap
 }
+
 fun convertCircomProofResult(proofResult: Map<String, Any>): CircomProofResult {
     val proofMap = proofResult["proof"] as Map<String, Any>
     val aMap = proofMap["a"] as Map<String, Any>
@@ -95,7 +95,7 @@ fun convertCircomProofResult(proofResult: Map<String, Any>): CircomProofResult {
     )
     val circomProofResult = CircomProofResult(circomProof, proofResult["inputs"] as List<String>)
     return circomProofResult
-  }
+}
 
 /** MoproFlutterPlugin */
 class MoproFlutterPlugin : FlutterPlugin, MethodCallHandler {
@@ -165,92 +165,6 @@ class MoproFlutterPlugin : FlutterPlugin, MethodCallHandler {
 
             val circomProofResult = convertCircomProofResult(proof)
             val res = verifyCircomProof(zkeyPath, circomProofResult, proofLib)
-            result.success(res)
-
-        } else if (call.method== "generateHalo2Proof") {
-            val srsPath = call.argument<String>("srsPath") ?: return result.error(
-                "ARGUMENT_ERROR",
-                "Missing srsPath",
-                null
-            )
-
-            val pkPath = call.argument<String>("pkPath") ?: return result.error(
-                "ARGUMENT_ERROR",
-                "Missing pkPath",
-                null
-            )
-
-            val inputs = call.argument<Map<String, List<String>>>("inputs") ?: return result.error(
-                "ARGUMENT_ERROR",
-                "Missing inputs",
-                null
-            )
-
-            val res = generateHalo2Proof(srsPath, pkPath, inputs)
-            val resultMap = mapOf(
-                "proof" to res.proof,
-                "inputs" to res.inputs
-            )
-
-            result.success(resultMap)
-        } else if (call.method== "verifyHalo2Proof") {
-            val srsPath = call.argument<String>("srsPath") ?: return result.error(
-                "ARGUMENT_ERROR",
-                "Missing srsPath",
-                null
-            )
-
-            val vkPath = call.argument<String>("vkPath") ?: return result.error(
-                "ARGUMENT_ERROR",
-                "Missing vkPath",
-                null
-            )
-
-            val proof = call.argument<ByteArray>("proof") ?: return result.error(
-                "ARGUMENT_ERROR",
-                "Missing proof",
-                null
-            )
-
-            val inputs = call.argument<ByteArray>("inputs") ?: return result.error(
-                "ARGUMENT_ERROR",
-                "Missing inputs",
-                null
-            )
-
-            val res = verifyHalo2Proof(srsPath, vkPath, proof, inputs)
-            result.success(res)
-        } else if (call.method== "generateNoirProof") {
-            val circuitPath = call.argument<String>("circuitPath") ?: return result.error(
-                "ARGUMENT_ERROR",
-                "Missing circuitPath",
-                null
-            )
-
-            val srsPath = call.argument<String>("srsPath") 
-
-            val inputs = call.argument<List<String>>("inputs") ?: return result.error(
-                "ARGUMENT_ERROR",
-                "Missing inputs",
-                null
-            )
-
-            val res = generateNoirProof(circuitPath, srsPath, inputs)
-            result.success(res)
-        } else if (call.method== "verifyNoirProof") {
-            val circuitPath = call.argument<String>("circuitPath") ?: return result.error(
-                "ARGUMENT_ERROR",
-                "Missing circuitPath",
-                null
-            )
-
-            val proof = call.argument<ByteArray>("proof") ?: return result.error(
-                "ARGUMENT_ERROR",
-                "Missing proof",
-                null
-            )
-
-            val res = verifyNoirProof(circuitPath, proof)
             result.success(res)
 
         } else {

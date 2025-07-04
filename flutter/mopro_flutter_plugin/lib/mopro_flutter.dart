@@ -37,42 +37,4 @@ class MoproFlutter {
       return await MoproFlutterPlatform.instance.verifyCircomProof(path, proof, proofLib);
     });
   }
-
-  Future<Halo2ProofResult?> generateHalo2Proof(
-      String srsPath, String pkPath, Map<String, List<String>> inputs) async {
-    return await copyAssetToFileSystem(srsPath).then((srsPath) async {
-      return await copyAssetToFileSystem(pkPath).then((pkPath) async {
-        return await MoproFlutterPlatform.instance
-            .generateHalo2Proof(srsPath, pkPath, inputs);
-      });
-    });
-  }
-
-  Future<bool> verifyHalo2Proof(
-      String srsPath, String vkPath, Uint8List proof, Uint8List inputs) async {
-    return await copyAssetToFileSystem(srsPath).then((srsPath) async {
-      return await copyAssetToFileSystem(vkPath).then((vkPath) async {
-        return await MoproFlutterPlatform.instance
-            .verifyHalo2Proof(srsPath, vkPath, proof, inputs);
-      });
-    });
-  }
-
-  Future<Uint8List> generateNoirProof(String circuitPath, String? srsPath, List<String> inputs) async {
-    return await copyAssetToFileSystem(circuitPath).then((circuitPath) async {
-      if (srsPath != null) {
-        return await copyAssetToFileSystem(srsPath).then((srsPath) async {
-          return await MoproFlutterPlatform.instance.generateNoirProof(circuitPath, srsPath, inputs);
-        });
-      } else {
-        return await MoproFlutterPlatform.instance.generateNoirProof(circuitPath, null, inputs);
-      }
-    });
-  }
-
-  Future<bool> verifyNoirProof(String circuitPath, Uint8List proof) async {
-    return await copyAssetToFileSystem(circuitPath).then((circuitPath) async {  
-      return await MoproFlutterPlatform.instance.verifyNoirProof(circuitPath, proof);
-    });
-  }
 }

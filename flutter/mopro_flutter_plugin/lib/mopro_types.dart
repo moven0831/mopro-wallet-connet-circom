@@ -1,16 +1,16 @@
 import 'dart:typed_data';
 
+enum ProofLib {
+  arkworks,
+  rapidsnark,
+}
+
 class G1Point {
   final String x;
   final String y;
   final String z;
 
   G1Point(this.x, this.y, this.z);
-
-  @override
-  String toString() {
-    return "G1Point(\nx: $x, \ny: $y, \nz: $z)";
-  }
 }
 
 class G2Point {
@@ -19,11 +19,6 @@ class G2Point {
   final List<String> z;
 
   G2Point(this.x, this.y, this.z);
-
-  @override
-  String toString() {
-    return "G2Point(\nx: $x, \ny: $y, \nz: $z)";
-  }
 }
 
 class ProofCalldata {
@@ -34,14 +29,7 @@ class ProofCalldata {
   final String curve;
 
   ProofCalldata(this.a, this.b, this.c, this.protocol, this.curve);
-
-  @override
-  String toString() {
-    return "ProofCalldata(\na: $a, \nb: $b, \nc: $c, \nprotocol: $protocol, \ncurve: $curve)";
-  }
 }
-
-enum ProofLib { arkworks, rapidsnark }
 
 class CircomProofResult {
   final ProofCalldata proof;
@@ -77,21 +65,5 @@ class CircomProofResult {
       },
       "inputs": inputs
     };
-  }
-}
-
-class Halo2ProofResult {
-  final Uint8List proof;
-  final Uint8List inputs;
-
-  Halo2ProofResult(this.proof, this.inputs);
-
-  factory Halo2ProofResult.fromMap(Map<Object?, Object?> proofResult) {
-    return Halo2ProofResult(
-        proofResult["proof"] as Uint8List, proofResult["inputs"] as Uint8List);
-  }
-
-  Map<String, dynamic> toMap() {
-    return {"proof": proof, "inputs": inputs};
   }
 }
