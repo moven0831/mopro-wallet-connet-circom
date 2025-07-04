@@ -105,10 +105,12 @@ class _MyAppState extends State<MyApp> {
     });
 
     try {
+      print('[MoproWallet] Starting AppKit initialization...');
+      
       // Initialize AppKit with proper context that has MaterialLocalizations
       final appKitModal = ReownAppKitModal(
         context: context,
-        projectId: const String.fromEnvironment('PROJECT_ID', defaultValue: 'c4f79cc821944d9680842e34466bfb44'), // Temporary test ID - replace with your actual Project ID
+        projectId: const String.fromEnvironment('PROJECT_ID', defaultValue: '248ac32fac3313463f6d442c787f4b7b'), // Using the Project ID from your build command
         metadata: const PairingMetadata(
           name: 'Mopro Wallet Connect',
           description: 'Zero-Knowledge Proof Generator with Wallet Connect',
@@ -135,13 +137,16 @@ class _MyAppState extends State<MyApp> {
         },
       );
 
+      print('[MoproWallet] Calling appKitModal.init()...');
       // Wait for initialization with timeout
       await appKitModal.init().timeout(
-        const Duration(seconds: 10),
+        const Duration(seconds: 15),
         onTimeout: () {
           throw Exception('Connection timeout - please check your internet connection and try again');
         },
       );
+
+      print('[MoproWallet] AppKit initialization completed successfully');
 
       if (mounted) {
         setState(() {
@@ -159,6 +164,7 @@ class _MyAppState extends State<MyApp> {
       }
     } catch (e) {
       print('[MoproWallet] Error during initialization: $e');
+      print('[MoproWallet] Error type: ${e.runtimeType}');
       if (mounted) {
         setState(() {
           _error = Exception('Failed to initialize AppKit: $e');
