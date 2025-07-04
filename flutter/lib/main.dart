@@ -460,6 +460,9 @@ class _MyAppState extends State<MyApp> {
                                 setState(() {
                                   _error = null;
                                   isProving = true;
+                                  // Reset verification results when generating a new proof
+                                  _circomValid = null;
+                                  _onChainValid = null;
                                 });
 
                                 FocusManager.instance.primaryFocus?.unfocus();
