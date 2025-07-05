@@ -1,7 +1,4 @@
-/// Configuration file for app-wide settings and constants
-/// 
-/// This file contains all the configuration values that developers
-/// can easily modify to customize their dApp.
+/// Configuration for app-wide settings and constants
 class AppConfig {
   // App Information
   static const String appName = 'Mopro Wallet Connect';
@@ -26,12 +23,14 @@ class AppConfig {
   static const bool debugMode = false;
   static const int connectionTimeoutSeconds = 15;
   
-  // Project ID - Replace with your own Reown AppKit Project ID
-  static const String defaultProjectId = '248ac32fac3313463f6d442c787f4b7b';
-  
-  /// Get the project ID from environment variables or use default
-  static String get projectId => 
-      const String.fromEnvironment('PROJECT_ID', defaultValue: defaultProjectId);
+  /// Get the project ID from environment variables (required)
+  static String get projectId {
+    const projectId = String.fromEnvironment('PROJECT_ID');
+    if (projectId.isEmpty) {
+      throw Exception('PROJECT_ID is required. Please run with: flutter run --dart-define=PROJECT_ID=YOUR_REOWN_PROJECT_ID');
+    }
+    return projectId;
+  }
   
   /// Check if app is in debug mode
   static bool get isDebugMode => 

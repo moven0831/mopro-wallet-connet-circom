@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 import '../config/app_config.dart';
 import '../services/proof_service.dart';
 
-/// A widget that displays information about the current circuit
-/// 
-/// This widget provides a clear explanation of what the circuit does
-/// and how it works, making it easier for users to understand.
+/// Displays information about the current circuit
 class CircuitInfo extends StatelessWidget {
   final Map<String, dynamic>? customCircuitInfo;
   final bool showTechnicalDetails;
@@ -36,7 +33,6 @@ class CircuitInfo extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Circuit Title
           Text(
             circuitInfo['name'] ?? AppConfig.circuitName,
             style: TextStyle(
@@ -47,9 +43,8 @@ class CircuitInfo extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           
-          // Circuit Description
           Text(
-            circuitInfo['description'] ?? AppConfig.circuitDescription,
+            'Proves you know two numbers that multiply to a result',
             style: TextStyle(
               fontSize: 14,
               color: Colors.blue.shade700,
@@ -58,7 +53,6 @@ class CircuitInfo extends StatelessWidget {
           
           const SizedBox(height: 12),
           
-          // Input/Output Information
           _buildIOInfo(circuitInfo),
           
           if (showTechnicalDetails) ...[
@@ -74,7 +68,6 @@ class CircuitInfo extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Input Information
         Text(
           'Inputs:',
           style: TextStyle(
@@ -85,14 +78,7 @@ class CircuitInfo extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          'Public: a (first number)',
-          style: TextStyle(
-            fontSize: 13,
-            color: Colors.blue.shade700,
-          ),
-        ),
-        Text(
-          'Private: b (second number)',
+          'a (public), b (private)',
           style: TextStyle(
             fontSize: 13,
             color: Colors.blue.shade700,
@@ -101,7 +87,6 @@ class CircuitInfo extends StatelessWidget {
         
         const SizedBox(height: 8),
         
-        // Output Information
         Text(
           'Output:',
           style: TextStyle(
@@ -112,7 +97,7 @@ class CircuitInfo extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          'Public: result = a × b (revealed to verifier)',
+          'result = a × b',
           style: TextStyle(
             fontSize: 13,
             color: Colors.blue.shade700,
@@ -145,23 +130,15 @@ class CircuitInfo extends StatelessWidget {
           
           _buildTechnicalItem(
             'Proof System',
-            circuitInfo['proofSystem'] ?? 'Unknown',
+            circuitInfo['proofSystem'] ?? 'Groth16',
           ),
           _buildTechnicalItem(
             'Curve',
-            circuitInfo['curve'] ?? 'Unknown',
+            circuitInfo['curve'] ?? 'bn128',
           ),
           _buildTechnicalItem(
             'Circuit File',
-            circuitInfo['zkeyPath'] ?? 'Unknown',
-          ),
-          _buildTechnicalItem(
-            'Input Fields',
-            (circuitInfo['inputFields'] as List<dynamic>?)?.join(', ') ?? 'Unknown',
-          ),
-          _buildTechnicalItem(
-            'Output Fields',
-            (circuitInfo['outputFields'] as List<dynamic>?)?.join(', ') ?? 'Unknown',
+            circuitInfo['zkeyPath'] ?? AppConfig.zkeyPath,
           ),
         ],
       ),
@@ -201,7 +178,7 @@ class CircuitInfo extends StatelessWidget {
   }
 }
 
-/// A compact version of the circuit info widget
+/// Compact version of circuit info widget
 class CircuitInfoCompact extends StatelessWidget {
   final String title;
   final String description;

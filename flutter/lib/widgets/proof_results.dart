@@ -4,11 +4,7 @@ import '../models/proof_result.dart';
 import '../config/network_config.dart';
 import '../services/blockchain_service.dart';
 
-/// A widget that displays proof results and verification status
-/// 
-/// This widget provides a comprehensive view of the proof generation
-/// and verification results, making it easy for users to understand
-/// the status of their ZK proofs.
+/// Displays proof results and verification status
 class ProofResults extends StatelessWidget {
   final ProofResult proofResult;
   final bool showProofDetails;
@@ -47,7 +43,6 @@ class ProofResults extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Title
           Text(
             'Proof Results',
             style: TextStyle(
@@ -59,12 +54,10 @@ class ProofResults extends StatelessWidget {
           
           const SizedBox(height: 12),
           
-          // Verification Status
           _buildVerificationStatus(),
           
           const SizedBox(height: 12),
           
-          // Public Inputs
           _buildPublicInputs(),
           
           if (showProofDetails) ...[
@@ -77,7 +70,6 @@ class ProofResults extends StatelessWidget {
             _buildBlockchainLinks(),
           ],
           
-          // Action buttons
           const SizedBox(height: 12),
           _buildActionButtons(context),
         ],
@@ -190,50 +182,25 @@ class ProofResults extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         
-        // Proof timestamp
         _buildDetailItem(
           'Generated',
           _formatTimestamp(proofResult.timestamp),
         ),
         
-        // Proof components
         if (proofResult.proofData != null) ...[
           _buildDetailItem(
-            'Proof System',
-            'Groth16',
+            'Proof A',
+            _formatProofComponent(proofResult.proofData!.a),
           ),
           _buildDetailItem(
-            'Curve',
-            'BN254',
+            'Proof B',
+            _formatProofComponent(proofResult.proofData!.b),
+          ),
+          _buildDetailItem(
+            'Proof C',
+            _formatProofComponent(proofResult.proofData!.c),
           ),
         ],
-        
-        const SizedBox(height: 8),
-        
-        // Proof data (collapsible)
-        ExpansionTile(
-          title: const Text(
-            'Raw Proof Data',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-          ),
-          children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(8.0),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(4.0),
-              ),
-              child: Text(
-                proofResult.proofData?.toString() ?? 'No proof data',
-                style: const TextStyle(
-                  fontFamily: 'monospace',
-                  fontSize: 10,
-                ),
-              ),
-            ),
-          ],
-        ),
       ],
     );
   }
@@ -245,7 +212,7 @@ class ProofResults extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 100,
+            width: 80,
             child: Text(
               '$label:',
               style: TextStyle(
@@ -261,6 +228,7 @@ class ProofResults extends StatelessWidget {
               style: TextStyle(
                 fontSize: 12,
                 color: Colors.green.shade700,
+                fontFamily: 'monospace',
               ),
             ),
           ),
@@ -294,7 +262,6 @@ class ProofResults extends StatelessWidget {
         
         const SizedBox(height: 8),
         
-        // Contract link
         InkWell(
           onTap: onViewContract,
           child: Container(
@@ -326,91 +293,85 @@ class ProofResults extends StatelessWidget {
   }
 
   Widget _buildActionButtons(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    return Column(
       children: [
-        // Copy proof button
-        ElevatedButton.icon(
-          onPressed: () => _copyProofToClipboard(context),
-          icon: const Icon(Icons.copy, size: 16),
-          label: const Text('Copy Proof'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.grey.shade100,
-            foregroundColor: Colors.grey.shade800,
-            elevation: 0,
-          ),
+        Row(
+          children: [
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: () => _copyProofToClipboard(context),
+                icon: const Icon(Icons.copy, size: 16),
+                label: const Text('Copy Proof'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: () => _copyPublicInputsToClipboard(context),
+                icon: const Icon(Icons.content_copy, size: 16),
+                label: const Text('Copy Inputs'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                ),
+              ),
+            ),
+          ],
         ),
         
-        // Share button
-        ElevatedButton.icon(
-          onPressed: () => _shareProof(context),
-          icon: const Icon(Icons.share, size: 16),
-          label: const Text('Share'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.grey.shade100,
-            foregroundColor: Colors.grey.shade800,
-            elevation: 0,
-          ),
-        ),
+        const SizedBox(height: 8),
         
-        // View contract button
-        if (showBlockchainLinks)
-          ElevatedButton.icon(
-            onPressed: () => _viewContract(context),
-            icon: const Icon(Icons.link, size: 16),
-            label: const Text('Contract'),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: () => _copyContractUrl(context),
+            icon: const Icon(Icons.open_in_new, size: 16),
+            label: const Text('Copy Contract URL'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue.shade100,
-              foregroundColor: Colors.blue.shade800,
-              elevation: 0,
+              backgroundColor: Colors.orange,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 8),
             ),
           ),
+        ),
       ],
     );
   }
 
   void _copyProofToClipboard(BuildContext context) {
-    final proofText = '''
-Proof Results:
-- Local Verification: ${proofResult.localVerification ?? 'Not verified'}
-- On-Chain Verification: ${proofResult.onChainVerification ?? 'Not verified'}
-- Public Inputs: ${proofResult.publicInputs}
-- Generated: ${_formatTimestamp(proofResult.timestamp)}
-- Network: Sepolia Testnet
-- Contract: ${NetworkConfig.verifierContractAddress}
-''';
-
-    Clipboard.setData(ClipboardData(text: proofText));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Proof details copied to clipboard')),
-    );
-    
-    onCopyProof?.call();
+    if (proofResult.circomProof != null) {
+      final proofJson = proofResult.circomProof!.proof.toString();
+      Clipboard.setData(ClipboardData(text: proofJson));
+      onCopyProof?.call();
+    }
   }
 
-  void _shareProof(BuildContext context) {
-    // This would typically integrate with platform sharing
-    // For now, just copy to clipboard
-    _copyProofToClipboard(context);
+  void _copyPublicInputsToClipboard(BuildContext context) {
+    final inputsJson = proofResult.publicInputs.toString();
+    Clipboard.setData(ClipboardData(text: inputsJson));
   }
 
-  void _viewContract(BuildContext context) {
-    final url = BlockchainService.instance.getContractExplorerUrl(
-      NetworkConfig.verifierContractAddress,
-    );
-    
-    // This would typically open the URL in a browser
-    // For now, just copy to clipboard
-    Clipboard.setData(ClipboardData(text: url));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Contract URL copied: $url')),
-    );
-    
+  void _copyContractUrl(BuildContext context) {
+    final contractUrl = 'https://sepolia.etherscan.io/address/${NetworkConfig.verifierContractAddress}';
+    Clipboard.setData(ClipboardData(text: contractUrl));
     onViewContract?.call();
   }
 
-  String _formatTimestamp(DateTime timestamp) {
-    return '${timestamp.day}/${timestamp.month}/${timestamp.year} ${timestamp.hour}:${timestamp.minute.toString().padLeft(2, '0')}';
+  String _formatTimestamp(DateTime? timestamp) {
+    if (timestamp == null) return 'Unknown';
+    return '${timestamp.hour.toString().padLeft(2, '0')}:${timestamp.minute.toString().padLeft(2, '0')}:${timestamp.second.toString().padLeft(2, '0')}';
+  }
+
+  String _formatProofComponent(dynamic component) {
+    if (component == null) return 'Unknown';
+    String str = component.toString();
+    return str.length > 20 ? '${str.substring(0, 20)}...' : str;
   }
 }
 

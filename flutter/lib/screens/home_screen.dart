@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import '../config/app_config.dart';
 import '../models/proof_result.dart';
+import '../services/wallet_service.dart';
 import '../widgets/wallet_connect_button.dart';
 import '../widgets/proof_form.dart';
 import '../widgets/proof_results.dart';
 
-/// The main home screen of the application
-/// 
-/// This screen combines all the components into a cohesive user interface,
-/// providing the main entry point for users to interact with the dApp.
+/// Main home screen of the application
 class HomeScreen extends StatefulWidget {
   final String? title;
 
@@ -22,20 +20,50 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final WalletService _walletService = WalletService.instance;
   ProofResult _currentProofResult = ProofResult();
   String? _statusMessage;
   bool _showResults = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Set up listeners for wallet connection changes
+    _setupWalletListeners();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  void _setupWalletListeners() {
+    // Listen for wallet connection state changes
+    // This will help update the UI when connection state changes
+    if (_walletService.appKitModal != null) {
+      // The ReownAppKit has internal state management
+      // We'll rely on the callbacks from WalletConnectButton to update UI
+    }
+  }
+
+  void _onWalletConnectionChanged() {
+    // Force UI update when wallet connection changes
+    if (mounted) {
+      setState(() {
+        // This will trigger a rebuild with updated connection state
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title ?? AppConfig.appName),
-        backgroundColor: Colors.blue.shade600,
+        backgroundColor: _walletService.isConnected ? Colors.green.shade600 : Colors.blue.shade600,
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
-          // Wallet connect button in the app bar
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
             child: WalletConnectButton(
@@ -45,12 +73,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   _statusMessage = 'Wallet connected successfully!';
                 });
                 _showStatusMessage();
+                _onWalletConnectionChanged();
               },
               onDisconnected: () {
                 setState(() {
                   _statusMessage = 'Wallet disconnected';
                 });
                 _showStatusMessage();
+                _onWalletConnectionChanged();
               },
               onError: () {
                 setState(() {
@@ -71,34 +101,170 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Welcome section
+                // Connection Status Banner
+                _buildConnectionStatusBanner(),
+                
+                const SizedBox(height: 16),
+                
                 _buildWelcomeSection(),
                 
                 const SizedBox(height: 24),
                 
-                // Proof form section
                 _buildProofFormSection(),
                 
                 const SizedBox(height: 24),
                 
-                // Results section
                 if (_showResults) ...[
                   _buildResultsSection(),
                   const SizedBox(height: 24),
                 ],
                 
-                // Status message
                 if (_statusMessage != null) ...[
                   _buildStatusMessage(),
                   const SizedBox(height: 24),
                 ],
                 
-                // Footer
                 _buildFooter(),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildConnectionStatusBanner() {
+    if (!_walletService.isConnected) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.orange.shade50,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.orange.shade300),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.info_outline,
+              color: Colors.orange.shade700,
+              size: 20,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Connect your wallet to generate and verify proofs on-chain',
+                style: TextStyle(
+                  color: Colors.orange.shade700,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            Icon(
+              Icons.keyboard_arrow_up,
+              color: Colors.orange.shade700,
+              size: 16,
+            ),
+          ],
+        ),
+      );
+    }
+
+    final walletAddress = _walletService.walletAddress;
+    final networkName = _walletService.selectedChain?.name ?? 'Unknown Network';
+    
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.green.shade600, Colors.green.shade500],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.green.shade200,
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              // Connected indicator
+              Container(
+                width: 12,
+                height: 12,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 12),
+              
+              Text(
+                'Wallet Connected',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              
+              const Spacer(),
+              
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  networkName,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          
+          if (walletAddress != null) ...[
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(
+                  Icons.account_balance_wallet,
+                  color: Colors.white.withOpacity(0.9),
+                  size: 16,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Address: ${walletAddress.substring(0, 8)}...${walletAddress.substring(walletAddress.length - 6)}',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.9),
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ],
+          
+          const SizedBox(height: 8),
+          
+          Text(
+            'You can now generate proofs and verify them on-chain',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.8),
+              fontSize: 12,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -130,7 +296,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Zero-Knowledge Proof Generator',
+            'ZK Proof Generator',
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -140,7 +306,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Generate and verify cryptographic proofs on-chain',
+            'Generate and verify proofs on-chain',
             style: TextStyle(
               fontSize: 16,
               color: Colors.white.withOpacity(0.9),
@@ -353,7 +519,6 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildFooterLink(String text, String url) {
     return InkWell(
       onTap: () {
-        // In a real app, this would open the URL
         setState(() {
           _statusMessage = 'Link copied: $url';
         });
@@ -371,7 +536,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _showStatusMessage() {
-    // Auto-hide status message after 3 seconds
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted) {
         setState(() {
@@ -382,7 +546,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _refreshData() async {
-    // Simulate refresh delay
     await Future.delayed(const Duration(milliseconds: 500));
     
     setState(() {
@@ -392,7 +555,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-/// A loading screen that can be shown while initializing
+/// Loading screen for initialization
 class LoadingScreen extends StatelessWidget {
   final String? message;
 

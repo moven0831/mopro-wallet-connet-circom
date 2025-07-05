@@ -2,28 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:reown_appkit/reown_appkit.dart';
 import '../services/wallet_service.dart';
 
-/// A reusable wallet connect button widget
-/// 
-/// This widget provides a clean interface for wallet connection functionality.
-/// It automatically handles the connection state and provides appropriate UI feedback.
+/// Wallet connection button widget
 class WalletConnectButton extends StatefulWidget {
   final VoidCallback? onConnected;
   final VoidCallback? onDisconnected;
   final VoidCallback? onError;
+  final bool showAccountInfo;
+  final Widget? customIcon;
   final String? customText;
   final ButtonStyle? customStyle;
-  final Widget? customIcon;
-  final bool showAccountInfo;
 
   const WalletConnectButton({
     Key? key,
     this.onConnected,
     this.onDisconnected,
     this.onError,
+    this.showAccountInfo = true,
+    this.customIcon,
     this.customText,
     this.customStyle,
-    this.customIcon,
-    this.showAccountInfo = true,
   }) : super(key: key);
 
   @override
@@ -40,16 +37,13 @@ class _WalletConnectButtonState extends State<WalletConnectButton> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Wallet Connection Button
         _buildConnectionButton(),
         
-        // Account Information (if connected and enabled)
         if (widget.showAccountInfo && _walletService.isConnected) ...[
           const SizedBox(height: 8),
           _buildAccountInfo(),
         ],
         
-        // Error Message
         if (_error != null) ...[
           const SizedBox(height: 8),
           _buildErrorMessage(),
@@ -84,6 +78,11 @@ class _WalletConnectButtonState extends State<WalletConnectButton> {
       );
     }
 
+    // Show connected state with wallet info
+    if (_walletService.isConnected) {
+      return _buildConnectedState();
+    }
+
     return AppKitModalConnectButton(
       appKit: _walletService.appKitModal!,
       custom: ElevatedButton.icon(
@@ -97,6 +96,112 @@ class _WalletConnectButtonState extends State<WalletConnectButton> {
             borderRadius: BorderRadius.circular(20),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildConnectedState() {
+    final walletAddress = _walletService.walletAddress;
+    final networkName = _walletService.selectedChain?.name ?? 'Unknown';
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.green.shade600,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.green.shade200,
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Connected indicator
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 8),
+          
+          // Wallet icon
+          const Icon(
+            Icons.account_balance_wallet,
+            color: Colors.white,
+            size: 18,
+          ),
+          const SizedBox(width: 6),
+          
+          // Connected text and address
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Connected',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              if (walletAddress != null) ...[
+                Text(
+                  '${walletAddress.substring(0, 6)}...${walletAddress.substring(walletAddress.length - 4)}',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.9),
+                    fontSize: 10,
+                  ),
+                ),
+              ],
+            ],
+          ),
+          
+          const SizedBox(width: 8),
+          
+          // Network indicator
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              networkName,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 10,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          
+          const SizedBox(width: 4),
+          
+          // Disconnect button
+          GestureDetector(
+            onTap: _disconnectWallet,
+            child: Container(
+              padding: const EdgeInsets.all(2),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.close,
+                color: Colors.white,
+                size: 12,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -146,8 +251,6 @@ class _WalletConnectButtonState extends State<WalletConnectButton> {
   }
 
   Future<void> _initializeWallet() async {
-    if (_isInitializing) return;
-
     setState(() {
       _isInitializing = true;
       _error = null;
@@ -155,18 +258,16 @@ class _WalletConnectButtonState extends State<WalletConnectButton> {
 
     try {
       await _walletService.initialize(context);
+      setState(() {
+        _isInitializing = false;
+      });
       widget.onConnected?.call();
     } catch (e) {
       setState(() {
         _error = e.toString();
+        _isInitializing = false;
       });
       widget.onError?.call();
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isInitializing = false;
-        });
-      }
     }
   }
 
@@ -174,6 +275,18 @@ class _WalletConnectButtonState extends State<WalletConnectButton> {
     try {
       await _walletService.connect();
       widget.onConnected?.call();
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+      });
+      widget.onError?.call();
+    }
+  }
+
+  Future<void> _disconnectWallet() async {
+    try {
+      await _walletService.disconnect();
+      widget.onDisconnected?.call();
     } catch (e) {
       setState(() {
         _error = e.toString();

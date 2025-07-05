@@ -5,17 +5,11 @@ import 'config/app_config.dart';
 import 'screens/home_screen.dart';
 
 /// Main entry point of the application
-/// 
-/// This file is now clean and focused only on app initialization,
-/// with all business logic extracted to appropriate services and widgets.
 void main() {
   runApp(const MyApp());
 }
 
-/// The root widget of the application
-/// 
-/// This widget sets up the basic app structure and theme.
-/// All functionality has been moved to dedicated services and screens.
+/// Root widget of the application
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
