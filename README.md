@@ -1,6 +1,6 @@
 # Mopro Mobile dApp Template (Circom)
 
-A Flutter template for building mobile dApps with zero-knowledge proofs and on-chain verification, powered by the Mopro stack and Reown's AppKit.
+A Flutter template for building mobile dApps with zero-knowledge proofs and on-chain verification.
 
 ## ✨ Features
 
@@ -8,7 +8,7 @@ A Flutter template for building mobile dApps with zero-knowledge proofs and on-c
 - **⛓️ On-Chain Verification**: Verify proofs on Ethereum-compatible networks
 - **👛 Wallet Connect**: Connect to 300+ wallets via Reown AppKit (WalletConnect v2)
 - **📱 Mobile-First**: Optimized for iOS and Android
-- **🛠️ Developer-Friendly**: Clean, modular architecture for easy customization
+- **🛠️ Developer-Friendly**: Modular architecture for easy customization
 
 ## 🚀 Quick Start
 
@@ -16,10 +16,9 @@ Before you begin, ensure you have:
 
 1. **Flutter Development Environment**: [Flutter installation guide](https://docs.flutter.dev/get-started/install)
 2. **Mopro Setup**: Follow the [mopro prerequisites](https://zkmopro.org/docs/prerequisites) to install Mopro CLI
-3. **Reown AppKit Account**: Create an Appkit project at [Reown Cloud](https://cloud.reown.com/), make sure you got the PROJECT_ID
+3. **Reown AppKit Project ID**: Create an Appkit project at [Reown Cloud](https://cloud.reown.com/) to get your `PROJECT_ID`
 
-
-## 🛠 Quick Start
+## 🛠 Setup
 
 ### 1. Clone and Setup
 
@@ -31,17 +30,14 @@ flutter pub get
 
 ### 2. Configure
 
-Edit `flutter/lib/config/app_config.dart`:
-```dart
-static const String defaultProjectId = 'YOUR_REOWN_PROJECT_ID';
-```
-
 Edit `flutter/lib/config/network_config.dart`:
 ```dart
 static const String verifierContractAddress = 'YOUR_CONTRACT_ADDRESS';
 ```
 
 ### 3. Run
+
+**Important**: You must provide your Reown Appkit's `PROJECT_ID` when running the app:
 
 ```bash
 flutter run --dart-define=PROJECT_ID=YOUR_REOWN_PROJECT_ID
@@ -58,6 +54,15 @@ flutter/lib/
 ├── screens/          # App screens (HomeScreen)
 └── utils/            # Utilities (DeepLinkHandler)
 ```
+
+## 🎨 UI Design
+
+The template features a minimalist design with:
+
+- **Clean Input Fields**: Simple `a` and `b` labels without verbose descriptions
+- **Dynamic Result Display**: Real-time `a × b = result` calculation
+- **Streamlined Status Messages**: Concise feedback without unnecessary text
+- **Essential Actions Only**: Core functionality without clutter
 
 ## 🔧 Adding Your Circuit
 
@@ -173,19 +178,16 @@ This template includes a simple multiplier circuit that proves you know two numb
 
 ### Private Authentication
 ```dart
-// Prove knowledge of a secret without revealing it
 CircuitInputs(secret: hashedSecret, nullifier: randomNullifier)
 ```
 
 ### Asset Verification
 ```dart
-// Prove balance above threshold without revealing exact amount
 CircuitInputs(balance: userBalance, threshold: minRequired)
 ```
 
 ### Anonymous Voting
 ```dart
-// Prove voting eligibility without revealing identity
 CircuitInputs(voterID: hashedID, merkleProof: eligibilityProof)
 ```
 
@@ -208,7 +210,7 @@ flutter build apk --dart-define=PROJECT_ID=YOUR_PROJECT_ID
 ## 🆘 Common Issues
 
 **Wallet Connection Fails:**
-- Check your `PROJECT_ID` is correct
+- Check your `PROJECT_ID` is correct and provided via `--dart-define`
 - Verify network connectivity
 
 **Proof Generation Fails:**
